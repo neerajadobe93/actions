@@ -1,0 +1,18 @@
+name: 'Copy Files/Folders within Current Repository'
+description: 'Copy files or folders from another repository to the current repository'
+branding:
+  icon: 'file-directory' # Choose an appropriate icon from https://primer.style/octicons/
+  color: 'blue' # Choose a color that matches your action's branding
+inputs:
+  source_repo:
+    description: 'Source Repository (format: owner/repo)'
+    required: true
+  source_path:
+    description: 'File/Directory Path to Copy from Source Repo'
+    required: true
+  source_pat:
+    description: 'PAT for Source Repo (if private, leave blank if public)'
+    required: false
+  pat:
+    description: 'PAT for operations, defaults to using GITHUB_TOKEN'
+    required: false
