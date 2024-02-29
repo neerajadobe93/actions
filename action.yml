@@ -27,7 +27,7 @@ jobs:
       - name: Checkout current repo
         uses: actions/checkout@v2
         with:
-          token: ${{ github.event.inputs.pat || secrets.GITHUB_TOKEN }}
+          token: ${{ inputs.pat || secrets.GITHUB_TOKEN }}
 
       - name: Setup Git Configuration
         run: |
@@ -36,18 +36,18 @@ jobs:
 
       - name: Clone Source Repository
         env:
-          SOURCE_PAT: ${{ github.event.inputs.source_pat }}
+          SOURCE_PAT: ${{ inputs.source_pat }}
         run: |
           if [ -z "$SOURCE_PAT" ]; then
-            git clone https://github.com/${{ github.event.inputs.source_repo }}.git source_repo
+            git clone https://github.com/${{ inputs.source_repo }}.git source_repo
           else
-            git clone https://${SOURCE_PAT}@github.com/${{ github.event.inputs.source_repo }}.git source_repo
+            git clone https://${SOURCE_PAT}@github.com/${{ inputs.source_repo }}.git source_repo
           fi
 
       - name: Copy File/Directory with Intermediary Directories
         run: |
-          SOURCE_PATH="source_repo/${{ github.event.inputs.source_path }}"
-          TARGET_PATH="${{ github.event.inputs.source_path }}"
+          SOURCE_PATH="source_repo/${{ inputs.source_path }}"
+          TARGET_PATH="${{ inputs.source_path }}"
           # Determine if source is a file or directory, then copy accordingly
           if [ -d "$SOURCE_PATH" ]; then
             # It's a directory, ensure target directory exists and copy contents
@@ -64,7 +64,7 @@ jobs:
 
       - name: Configure Git for Current Repository Operations
         env:
-          PAT: ${{ github.event.inputs.pat }}
+          PAT: ${{ inputs.pat }}
         run: |
           if [ -z "$PAT" ]; then
             echo "here"
@@ -76,7 +76,7 @@ jobs:
 
       - name: Commit and Push Changes to Current Repository
         run: |
-          TARGET_PATH="${{ github.event.inputs.source_path }}"
+          TARGET_PATH="${{ inputs.source_path }}"
           git add "$TARGET_PATH"
-          git commit -m "Copy files/folders from ${{ github.event.inputs.source_repo }}"
+          git commit -m "Copy files/folders from ${{ inputs.source_repo }}"
           git push
