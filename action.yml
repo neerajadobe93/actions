@@ -1,0 +1,81 @@
+name: Copy Files/Folders within Current Repository
+branding:
+  color: blue
+  icon: upload
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_repo:
+        description: 'Source Repository (format: owner/repo)'
+        required: true
+      source_path:
+        description: 'File/Directory Path to Copy from Source Repo'
+        required: true
+      source_pat:
+        description: 'PAT for Source Repo (if private, leave blank if public)'
+        required: false
+      pat:
+        description: 'PAT for operations, defaults to using GITHUB_TOKEN'
+        required: false
+
+jobs:
+  copy-files:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current repo
+        uses: actions/checkout@v2
+        with:
+          token: ${{ github.event.inputs.pat || secrets.GITHUB_TOKEN }}
+
+      - name: Setup Git Configuration
+        run: |
+          git config --global user.name 'GitHub Action'
+          git config --global user.email 'action@github.com'
+
+      - name: Clone Source Repository
+        env:
+          SOURCE_PAT: ${{ github.event.inputs.source_pat }}
+        run: |
+          if [ -z "$SOURCE_PAT" ]; then
+            git clone https://github.com/${{ github.event.inputs.source_repo }}.git source_repo
+          else
+            git clone https://${SOURCE_PAT}@github.com/${{ github.event.inputs.source_repo }}.git source_repo
+          fi
+
+      - name: Copy File/Directory with Intermediary Directories
+        run: |
+          SOURCE_PATH="source_repo/${{ github.event.inputs.source_path }}"
+          TARGET_PATH="${{ github.event.inputs.source_path }}"
+          # Determine if source is a file or directory, then copy accordingly
+          if [ -d "$SOURCE_PATH" ]; then
+            # It's a directory, ensure target directory exists and copy contents
+            mkdir -p "$TARGET_PATH"
+            cp -r "$SOURCE_PATH/"* "$TARGET_PATH/"
+          elif [ -f "$SOURCE_PATH" ]; then
+            # It's a file, ensure target directory exists and copy the file
+            mkdir -p "$(dirname "$TARGET_PATH")"
+            cp "$SOURCE_PATH" "$TARGET_PATH"
+          else
+            echo "Source path does not exist or is not a valid file/directory."
+            exit 1
+          fi
+
+      - name: Configure Git for Current Repository Operations
+        env:
+          PAT: ${{ github.event.inputs.pat }}
+        run: |
+          if [ -z "$PAT" ]; then
+            echo "here"
+            echo "https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+            git remote set-url origin https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          else
+            git remote set-url origin https://${PAT}@github.com/${{ github.repository }}.git
+          fi
+
+      - name: Commit and Push Changes to Current Repository
+        run: |
+          TARGET_PATH="${{ github.event.inputs.source_path }}"
+          git add "$TARGET_PATH"
+          git commit -m "Copy files/folders from ${{ github.event.inputs.source_repo }}"
+          git push
