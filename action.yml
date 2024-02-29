@@ -1,4 +1,5 @@
 name: Copy Files/Folders within Current Repository
+description: Copy files or folders from a source repository to the current repository.
 branding:
   color: blue
   icon: upload
