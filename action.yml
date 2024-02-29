@@ -1,8 +1,8 @@
 name: 'Copy Files/Folders within Current Repository'
 description: 'Copy files or folders from another repository to the current repository'
 branding:
-  icon: 'file-directory' # Choose an appropriate icon from https://primer.style/octicons/
-  color: 'blue' # Choose a color that matches your action's branding
+  icon: 'copy'
+  color: 'blue'
 inputs:
   source_repo:
     description: 'Source Repository (format: owner/repo)'
